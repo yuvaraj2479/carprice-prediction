@@ -1,0 +1,321 @@
+---
+title: "CAR PRICE PREDICTION"
+author: "yuvaraj"
+date: "10/08/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(DescTools)
+```
+load the file
+```{r}
+library(readr)
+geely=read.csv("D:/3sem project/CarPrice_Assignment.csv")
+geely
+
+```
+
+```{r}
+attach(geely)
+```
+
+```{r}
+??geely
+```
+						
+1	Car_ID			     Unique id of each observation (Interger)		
+2	Symboling 			 Its assigned insurance risk rating, A value of +3 indicates that the auto is                         risky,  -3 that it is probably pretty safe.(Categorical) 		
+3	carCompany			 Name of car company (Categorical)		
+4	fueltype		   	 Car fuel type i.e gas or diesel (Categorical)		
+5	aspiration			 Aspiration used in a car (Categorical)		
+6	doornumber			 Number of doors in a car (Categorical)		
+7	carbody			     body of car (Categorical)		
+8	drivewheel			 type of drive wheel (Categorical)		
+9	enginelocation	 Location of car engine (Categorical)		
+10	wheelbase			 Weelbase of car (Numeric)		
+11	carlength			 Length of car (Numeric)		
+12	carwidth			 Width of car (Numeric)		
+13	carheight			 height of car (Numeric)		
+14	curbweight		 The weight of a car without occupants or baggage. (Numeric)		
+15	enginetype		 Type of engine. (Categorical)		
+16	cylindernumber cylinder placed in the car (Categorical)		
+17	enginesize		 Size of car (Numeric)		
+18	fuelsystem		 Fuel system of car (Categorical)		
+19	boreratio			 Boreratio of car (Numeric)		
+20	stroke			   Stroke or volume inside the engine (Numeric)		
+21	compression
+    ratio			     compression ratio of car (Numeric)		
+22	horsepower		 Horsepower (Numeric)		
+23	peakrpm			   car peak rpm (Numeric)		
+24	citympg			   Mileage in city (Numeric)		
+25	highwaympg		 Mileage on highway (Numeric)		
+26	price(Dependent 
+     variable)	   Price of car (Numeric)		
+     
+```{r}
+library(Hmisc)
+describe(geely)
+```
+     
+
+```{r}
+view(geely)
+
+```
+
+```{r}
+summary(geely)
+```
+```{r}
+str(geely)
+```
+```{r}
+dim(geely)
+```
+```{r}
+nrow(geely)
+ncol(geely)
+```
+
+```{r}
+names(geely)
+```
+
+
+```{r}
+summary(geely)
+```
+
+```{r}
+colSums(is.na(geely))
+
+```
+
+```{r}
+table(fueltype)
+```
+```{r}
+table(aspiration)
+```
+```{r}
+table(doornumber)
+```
+```{r}
+table(carbody)
+```
+```{r}
+table(drivewheel)
+```
+```{r}
+table(enginelocation)
+```
+```{r}
+table(enginetype)
+```
+```{r}
+table(cylindernumber)
+```
+
+```{r}
+table(fuelsystem)
+```
+```{r}
+library(tidyverse)
+library(tidyr)
+geely=separate(geely,CarName,into=c("company_name","model"),sep=" ")
+
+
+```
+
+```{r}
+
+company_name=as.factor(geely$company_name)
+```
+ 
+```{r}
+names(geely)
+```
+
+
+```{r}
+table(company_name)
+```
+```{r}
+geely<-geely%>%mutate(model = ifelse(is.na(model), "Not_available",geely$model))
+geely
+
+```
+ 
+```{r}
+geely$model          =as.factor(geely$model)
+geely$fueltype       = as.factor(geely$fueltype)
+geely$aspiration     = as.factor(geely$aspiration)
+geely$doornumber     = as.factor(geely$doornumber)
+geely$carbody        = as.factor(geely$carbody)
+geely$drivewheel     = as.factor(geely$drivewheel)
+geely$enginelocation = as.factor(geely$enginelocation)
+geely$enginetype     = as.factor(geely$enginetype)
+geely$cylindernumber = as.factor(geely$cylindernumber)
+geely$fuelsystem     =as.factor(geely$fuelsystem)
+
+
+```
+
+
+
+```{r}
+geely$company_name[which(geely$company_name=="toyouta")]="toyota"
+geely$company_name[which(geely$company_name=="vokswagen")]="volkswagen"
+geely$company_name[which(geely$company_name=="vw")]="volkswagen"
+geely$company_name[which(geely$company_name=="Nissan")]="nissan"
+geely$company_name[which(geely$company_name=="maxda")]="mazda"
+geely$company_name[which(geely$company_name=="porcshce")]="porsche"
+```
+
+```{r}
+str(geely)
+```
+```{r}
+summary(geely)
+```
+
+
+// Perform EDA
+
+relationship bw 2  variables
+```{r}
+library(ggplot2)
+```
+
+//geom boxplot
+```{r}
+ggplot(geely,mapping=aes(fueltype,price))+geom_boxplot()
+```
+
+
+// Line Chart
+```{r}
+ggplot(geely,mapping=aes(horsepower,price,col=geely$fueltype))+geom_line()
+```
+
+
+//histogram
+```{r}
+ggplot(geely)+geom_histogram(mapping=aes(fill=enginetype,price),Position = "dodge")
+```
+
+//point with line chart
+```{r}
+library(tidyverse)
+```
+
+```{r}
+geely%>%filter(highwaympg>30)%>%ggplot(mapping=aes(horsepower,price,col=fueltype))+geom_line()+geom_point()
+```
+```{r}
+geely%>%filter()%>%ggplot(mapping=aes(horsepower,price,col=drivewheel))+geom_line()+geom_point()
+```
+###model building
+```{r}
+geely$model[is.na(geely$model)]<-mean(geely$model,na.rm=TRUE)
+geely
+```
+
+
+```{r}
+train1=sample(nrow(geely),nrow(geely)*0.9)
+train=geely[train1,]
+test=geely[-train1,]
+```
+
+
+```{r}
+library(tree)
+```
+
+```{r}
+tree_fit=tree(price~.,data=train)
+tree_fit
+summary(tree_fit)
+```
+
+```{r}
+plot(tree_fit)
+text(tree_fit,pretty=0)
+
+```
+
+```{r}
+cv_gly=cv.tree(tree_fit)
+cv_gly
+```
+
+```{r}
+names(cv_gly)
+```
+
+```{r}
+plot(cv_gly$size,cv_gly$dev,type = "b")
+```
+
+
+```{r}
+prune_gly=prune.tree(tree_fit,best=3)
+plot(prune_gly)
+text(prune_gly,pretty=0)
+```
+
+```{r}
+tr_predict=predict(tree_fit,newdata=test)
+tr_predict
+```
+
+
+
+```{r}
+plot(tr_predict,test$price)
+abline(0,1)
+
+```
+
+```{r}
+mean((tr_predict-test$price)^2)
+```
+
+###random forest
+
+```{r}
+
+library(randomForest)
+```
+
+```{r}
+sqrt(26)
+set.seed(1)
+rfm=randomForest(train$price ~.,data=train,mtry=6,ntree=500,importance=TRUE)
+summary(rfm)
+```
+
+```{r}
+plot(rfm)
+```
+
+```{r}
+predict_rfm= predict(rfm, newdata=test)
+predict_rfm
+```
+
+```{r}
+plot(predict_rfm,test$price)
+abline (0,1)
+
+```
+
+```{r}
+mean((predict_rfm-test$price)^2)
+```
+
+
